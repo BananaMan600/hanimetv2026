@@ -1,10 +1,10 @@
 [tool.poetry]
-name = "hanimetv"
-version = "1.2.1"
+name = "hanimetv2026"
+version = "1.1.1"
 description = "CLI downloader tool for hanime.tv"
-authors = ["rxqv"]
+authors = ["BananaMan600"]
 readme = "README.md"
-repository = "https://github.com/rxqv/htv"
+repository = "https://github.com/BananaMan600/hanimetv2026"
 
 [tool.poetry.dependencies]
 python = "^3.6"
@@ -12,7 +12,7 @@ requests = "*"
 youtube_dl = "*"
 
 [tool.poetry.scripts]
-htv = 'hanimetv.cli:main'
+hanimetv2026 = 'hanimetv2026.cli:main'
 
 [tool.poetry.dev-dependencies]
 
