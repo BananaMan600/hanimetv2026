@@ -1,4 +1,5 @@
 # hanimetv2026
+This CLI uses yt-dlp with a plugin for downloading videos from hanime.tv and the API for adding metadata to the files.
 
 ### Python Packages Installation
 Install the required Python packages using pip:
