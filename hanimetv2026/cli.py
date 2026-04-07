@@ -39,7 +39,7 @@ def main():
     parser.add_argument("--skip-unavailable-fragments", help="Skip unavailable video fragments after retrying 1 time", action="store_true", default=False)
 
     #Path options
-    parser.add_argument("--output-dir", "-o", help="Output directory for downloads", type=str, default=r".")
+    parser.add_argument("--output-dir", "-o", help="Output directory for downloads", type=str, default=r".\\")
     parser.add_argument("--working-dir", "-w", help="Working directory for downloads", type=str, default=None)
     parser.add_argument("--save-urls-dir", dest="save_urls_dir", help="Path to log file for download URLs", type=str, default=None)
     parser.add_argument("--save-slugs-dir", dest="save_slugs_dir", help="Path to .txt file for slugs of downloaded videos", type=str, default=None)
