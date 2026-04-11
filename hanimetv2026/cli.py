@@ -51,7 +51,7 @@ def main():
     parser.add_argument("--all", "-a", help="Download all videos", action="store_true", default=False)
     parser.add_argument("--batch-file", "-b", help="Path to .txt file containing video URLs or search terms, one per line", type=str, default=None)
     parser.add_argument("--search", help="Mode to use for search and download videos with other arguments", action="store_true", default=False)
-    parser.add_argument("--update", help="Check for updates to videos already downloaded (only with --search and --save-urls-dir or --save-slugs-dir)", action="store_true", default=False)
+    parser.add_argument("--update", help="Check for updates to videos already downloaded (only with --search)", action="store_true", default=False)
     parser.add_argument("--only-posters", help="Only download posters for videos", action="store_true", default=False)
     parser.add_argument("--add-only-metadata", help="Adds metadata and thumbnail to already downloaded videos in batch file", action="store_true", default=False)
 
@@ -68,10 +68,20 @@ def main():
         exit(1)
 
     # Check if more than one mutually exclusive mode is provided
-    mode_args = [args.video, args.batch_file, args.update, args.search]
+    mode_args = [args.video, args.batch_file, args.all, args.search]
     if sum(arg is not None and arg != False for arg in mode_args) > 1:
-        print("Only one of the mode arguments --video, --all, --batch-file, --update and --search can be chosen at a time")
+        print("Only one of the mode arguments --video, --all, --batch-file and --search can be chosen at a time")
         exit(1)
+    
+    #check if update and other mode other than search is provided
+    if args.update and args.search:
+        if args.search and [args.batch_file, args.video, args.all] > 1:
+            print("Update can only be used with --search")
+            return
+        elif args.verbose:
+            print("Update commands seem right.")
+    else:
+        return
 
     start_video_download(args)
 

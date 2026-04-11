@@ -349,6 +349,8 @@ def web_scrape_all_videos_by_search(cmd, args, search_term):
                     if args.verbose and args.update:
                         print(f"Checked for recent videos on search_{search_term}. {slug}, already downloaded, stopping update.")
                         return
+                    elif args.update:
+                        return
                     else:
                         print(f"Slug {slug} already downloaded, skipping.")
                     continue
