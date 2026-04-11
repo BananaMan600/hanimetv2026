@@ -75,7 +75,8 @@ def main():
     
     #check if update and other mode other than search is provided
     if args.update and args.search:
-        if args.search and [args.batch_file, args.video, args.all] > 1:
+        mode_args = [args.batch_file, args.video, args.all]
+        if args.search and (sum(arg is not None and arg != False for arg in mode_args) > 0):
             print("Update can only be used with --search")
             return
         elif args.verbose:
