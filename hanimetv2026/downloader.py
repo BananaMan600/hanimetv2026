@@ -446,11 +446,11 @@ def start_video_download(args):
     elif args.search:
         #Check for incompatible arguments
         search_terms =""
-        if args.tag and args.brand:
+        if args.tags and args.brand:
             return Exception("Error: --tag and --brand cannot be used together with --search. Please choose one or the other.")
         #Determine search term
-        if args.tag:
-            search_terms = args.tag #OR-Search! Will search each tag separately and combine results, currently only supports searching one tag
+        if args.tags:
+            search_terms = args.tags #OR-Search! Will search each tag separately and combine results, currently only supports searching one tag
         elif args.brand:
             search_terms = args.brand #OR-Search! Will search each brand separately and combine results, currently only supports searching one brand
         else:
