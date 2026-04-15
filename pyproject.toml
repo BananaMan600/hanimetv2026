@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "hanimetv2026"
-version = "1.2.1"
+version = "1.2.9"
 description = "CLI downloader tool for hanime.tv"
 authors = ["BananaMan600"]
 readme = "README.md"

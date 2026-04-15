@@ -127,15 +127,10 @@ def download_picture(picture_file_path, URL, slug, args, video):
     # Convert picture to JPG format for MP4 compatibility
     jpg_picture_path = os.path.splitext(picture_file_path)[0] + "_converted.jpg"
     convert_cmd = ["ffmpeg", "-y", "-i", picture_file_path, "-c:v", "mjpeg", "-f", "image2", jpg_picture_path]
-    convert_result = subprocess.run(convert_cmd, capture_output=True, text=True)
+    convert_result = subprocess.run(convert_cmd, capture_output=True, encoding="utf-8", text=True)
     if convert_result.returncode == 0 and os.path.exists(jpg_picture_path):
         if args.verbose:
-            if(args.add_only_metadata):
-                print(f"Thumbnail downloaded and converted successfully")
-            elif os.path.exists(video.work_path_poster if args.working_dir else video.output_path_poster):
-                print(f"Poster downloaded and converted successfully")
-            else:
-                print(f"Thumbnail downloaded and converted successfully")
+            print(f"Picture downloaded and converted successfully")
         return jpg_picture_path 
     else:
         if args.verbose:
@@ -157,7 +152,8 @@ def download_poster(video, slug, args):
     except Exception as e:
         if args.verbose:
             print(f"Cleanup warning: {e}")
-
+    if args.verbose:
+        print("poster downloaded")
 
 def add_embedded_thumbnail(video, slug, args):
     thumbnail_path = video.work_path_thumbnail if args.working_dir else video.output_path_thumbnail
@@ -167,7 +163,7 @@ def add_embedded_thumbnail(video, slug, args):
     
     if thumb_to_use is None:
         if args.verbose:
-            print(f"Skipping thumbnail embedding due to download/conversion failure")
+            print(f"Skipping thumbnail embedding did not find thumbnail")
         return
     
     # Get the video path (the actual MP4 file to embed thumbnail into)
@@ -186,7 +182,7 @@ def add_embedded_thumbnail(video, slug, args):
 
     if any([args.verbose, args.verbose_ffmpeg]):
         print(f"FFmpeg thumbnail command: {' '.join(cmd_embeding_thumbnail)}")
-    result2 = subprocess.run(cmd_embeding_thumbnail, capture_output=True, text=True)
+    result2 = subprocess.run(cmd_embeding_thumbnail, capture_output=True, encoding="utf-8", text=True)
 
     if result2.returncode == 0:
         os.replace(temp_path2, video_path)
@@ -216,6 +212,9 @@ def add_embedded_thumbnail(video, slug, args):
     except Exception as e:
         if args.verbose:
             print(f"Cleanup warning: {e}")
+
+    if args.verbose:
+        print("Thumbnail downloaded and embbed")
 
 
 def add_emmbeded_metadata(video, args):
@@ -254,7 +253,7 @@ def add_emmbeded_metadata(video, args):
     if args.verbose and args.verbose_ffmpeg:
         print(f"FFmpeg command: {' '.join(cmd)}")
     
-    result = subprocess.run(cmd, capture_output=True, text=True)
+    result = subprocess.run(cmd, capture_output=True, encoding='utf-8', text=True)
     if result.returncode == 0:
         os.replace(temp_video_file_path, video.work_path_filename if video.work_path_filename else video.output_path_filename)
         if args.verbose:
@@ -346,7 +345,7 @@ def web_scrape_all_videos_by_search(cmd, args, search_term):
 
                 video = Video.from_slug(slug, args)
                 if check_if_downloaded(video, slug, args):
-                    if args.verbose and args.update:
+                    if args.verbose and args.update and page_retry_count == 0:
                         print(f"Checked for recent videos on search_{search_term}. {slug}, already downloaded, stopping update.")
                         return
                     elif args.update:
@@ -361,7 +360,7 @@ def web_scrape_all_videos_by_search(cmd, args, search_term):
             page += 1
             time.sleep(args.sleep_time)  # Sleep between page requests
         except:
-            print(f"Error scraping page {page} for {search_term}, retrying...")
+            print(f"Error happened scraping page {page} for {search_term}, retrying...")
             page_retry_count += 1
             sleep_time = args.sleep_time * page_retry_count * 2
             print(f"Sleeping for {sleep_time} seconds before retrying...")
@@ -443,6 +442,7 @@ def start_video_download(args):
         for tag in tags:
             web_scrape_all_videos_by_search(cmd, args, tag)
     
+    # --search 
     elif args.search:
         #Check for incompatible arguments
         search_terms =""
@@ -511,6 +511,7 @@ def download(video, slug, cmd, args):
                         capture_output=False,
                         text=True,
                         encoding="utf-8",
+                        errors='replace',
                         env=env,
                         timeout=300,
                     )
