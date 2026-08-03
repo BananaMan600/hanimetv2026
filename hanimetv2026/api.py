@@ -26,10 +26,15 @@ class SearchResult:
     
     __repr__ = __str__
 
+#Creates an Video object from the hanime.tv API response, extracting relevant metadata 
+#and constructing file paths for output and working directories based on user arguments.
 class Video:
     def __init__(self, json_enc, args):
-        self.title = json_enc["hentai_video"]["name"] #The title of the video, as displayed on the website and used in search results
-        self.slug = json_enc["hentai_video"]["slug"] #slug is the unique identifier for a video, used in URLs and API calls
+        video_data = json_enc.get("video", {})
+        franchise_data = json_enc.get("franchise", {})
+
+        self.title = video_data["name"] #The title of the video, as displayed on the website and used in search results
+        self.slug = video_data["slug"] #slug is the unique identifier for a video, used in URLs and API calls
         self.sources = {} #A dictionary mapping source names (e.g. "server1-1080") to their corresponding video URLs, extracted from the "videos_manifest" section of the API response.
         metadata = {}
 
@@ -43,43 +48,45 @@ class Video:
         self.work_path_poster = os.path.join(args.working_dir, f"{file_name}.jpg") if args.working_dir and (args.poster_download or args.only_posters) else None
         self.work_path_thumbnail = os.path.join(args.working_dir, f"{file_name}_thumbnail.jpg") if args.working_dir and not args.no_thumbnail else None
 
-        metadata["brand"] = json_enc["hentai_video"]["brand"]
-        metadata["likes"] = json_enc["hentai_video"]["likes"]
-        metadata["dislikes"] = json_enc["hentai_video"]["dislikes"]
-        metadata["views"] = json_enc["hentai_video"]["views"]
-        metadata["tags"] = list(map(lambda i: i["text"], json_enc["hentai_video"]["hentai_tags"]))
-        metadata["thumbnail"] = json_enc["hentai_video"]["poster_url"]
-        metadata["cover"] = json_enc["hentai_video"]["cover_url"]
-        metadata["downloads"] = json_enc["hentai_video"]["downloads"]
-        metadata["monthly_rank"] = json_enc["hentai_video"]["monthly_rank"]
-        metadata["description"] = re.compile(r'<[^>]+>').sub("", json_enc["hentai_video"]["description"])
-        metadata["released_at"] = json_enc["hentai_video"].get("released_at")
-        metadata["created_at"] = json_enc["hentai_video"].get("created_at")
-        metadata["released_at_unix"] = json_enc["hentai_video"].get("released_at_unix", 0)
-        metadata["created_at_unix"] = json_enc["hentai_video"].get("created_at_unix", 0)
-        metadata["franchise_slug"] = json_enc["hentai_franchise"]["slug"]
-        metadata["franchise_title"] = json_enc["hentai_franchise"]["title"]
-        metadata["franchise_videos"] = [vid["slug"] for vid in json_enc["hentai_franchise_hentai_videos"]]
+        metadata["brand"] = video_data["brand"]
+        metadata["likes"] = video_data["likes"]
+        metadata["dislikes"] = video_data["dislikes"]
+        metadata["views"] = video_data["views"]
+        metadata["tags"] = video_data["tags"]
+        metadata["thumbnail"] = video_data["poster_url"]
+        metadata["cover"] = video_data["cover_url"]
+        metadata["downloads"] = video_data["downloads"]
+        metadata["monthly_rank"] = video_data["monthly_rank"]
+        metadata["description"] = re.compile(r'<[^>]+>').sub("", video_data["description"])
+        metadata["released_at"] = video_data.get("released_at")
+        metadata["created_at"] = video_data.get("created_at")
+        # The new API endpoint does not expose Unix timestamp fields.
+        metadata["released_at_unix"] = 0
+        metadata["created_at_unix"] = 0
+        metadata["franchise_slug"] = franchise_data.get("slug")
+        metadata["franchise_title"] = franchise_data.get("title")
+        metadata["franchise_videos"] = [vid["slug"] for vid in franchise_data.get("videos", [])]
         self.metadata = type("Metadata", (), metadata)()
     
     @staticmethod
     def from_slug(slug, args):
-        #Load video metadata from hanime.tv API only (no yt-dlp fallback).
+        #Load video metadata from the new Hanime scraper API endpoint.
         max_retries = 3
         for attempt in range(max_retries):
             try:
                 resp = requests.get(
-                    f"https://hanime.tv/api/v8/video?id={slug}",
+                    f"https://hanime-scraper.sapis.workers.dev/api/video/{slug}",
                     headers={
-                        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36",
+                        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
                         "Accept": "application/json",
+                        "Referer": "https://hanime.tv/",
                     },
                     timeout=15,
                 )
                 resp.raise_for_status()
                 api_data = resp.json()
 
-                if "hentai_video" not in api_data:
+                if "video" not in api_data:
                     raise ValueError(f"No video metadata found for slug {slug}")
 
                 return Video(api_data, args)
