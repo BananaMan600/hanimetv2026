@@ -56,7 +56,7 @@ def main():
     parser.add_argument("--add-only-metadata", help="Adds metadata and thumbnail to already downloaded videos in batch file", action="store_true", default=False)
 
     #Search arguments /Search via API broken, at this time search is only supported with tags
-    parser.add_argument("--continue-from-page", help="Continue downloading from a specific page number (for --all or --search)", type=int, default=0)
+    parser.add_argument("--continue-from-page", help="Continue downloading from a specific page number (for --all or --search)", type=int, default=1)
     parser.add_argument("--tags", "-t", help="Tags to search for (used with --search)", action="store", nargs="+", default=["uncensored","censored"]) #Default to uncensored tag to avoid downloading censored videos by default
     parser.add_argument("--brand", "-c", help="Companies/brands to filter by (used with --search)", action="store", nargs="+", default=None)
 
