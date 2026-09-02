@@ -1,4 +1,4 @@
-#API wrapper for hanime.tv, providing  video metadata functionality, 
+#API wrapper for hanime.tv, providing video metadata functionality, 
 import requests
 import json
 import re
@@ -6,25 +6,7 @@ import os
 import time
 from urllib.parse import urlparse
 
-
-class SearchResult:
-    def __init__(self, slug, title):
-        self.title = title
-        self.slug = slug
-    
-    @property
-    def video(self):
-        return Video.from_slug(self.slug)
-    
-    def __str__(self):
-        return f"<Result {self.slug}: {self.title}>"
-    
-    __repr__ = __str__
-   
-    def __str__(self):
-        return f'<Video {self.slug}: "{self.title}">'
-    
-    __repr__ = __str__
+from hanimetv2026.colors import bcolors
 
 #Creates an Video object from the hanime.tv API response, extracting relevant metadata 
 #and constructing file paths for output and working directories based on user arguments.
@@ -71,7 +53,8 @@ class Video:
     @staticmethod
     def from_slug(slug, args):
         #Load video metadata from the new Hanime scraper API endpoint.
-        max_retries = 3
+        #And return a Video object constructed from the API response.
+        max_retries = args.retrys
         for attempt in range(max_retries):
             try:
                 resp = requests.get(
@@ -87,26 +70,28 @@ class Video:
                 api_data = resp.json()
 
                 if "video" not in api_data:
-                    raise ValueError(f"No video metadata found for slug {slug}")
-
-                return Video(api_data, args)
+                    if attempt == max_retries - 1:
+                        raise Exception(f"{bcolors.FAIL}[Hanimetv2026 Error:] No video object could be created for slug. Stopped download of {slug}{bcolors.ENDC}")
+                    print(f"{bcolors.WARNING}[API Warning:] No video metadata found for slug {slug}. Retrying...{bcolors.ENDC}")
+                    time.sleep(args.sleep_time)
+                else:
+                    return Video(api_data, args)
+            
             except requests.exceptions.HTTPError as e:
+                if attempt == max_retries - 1:
+                    raise Exception(f"{bcolors.FAIL}[Hanimetv2026 Error:] Rate limit hit on metadata retrieval attempt {slug} after {max_retries} attempts. Stopped download of {slug}. Error: {e}{bcolors.ENDC}")
                 if resp.status_code == 429:  # Rate limit
-                    print(f"Rate limit hit on metadata retrieval attempt {attempt + 1} for slug {slug}. Waiting 3 minutes...")
+                    print(f"{bcolors.WARNING}[Hanimetv2026 Warning:] Rate limit hit on metadata retrieval attempt {attempt + 1} for slug {slug}. Waiting 3 minutes...{bcolors.ENDC}")
                     time.sleep(180)  # 3 minutes
                     continue
-                else:
-                    if attempt == max_retries - 1:
-                        raise
-                    if args and args.verbose:
-                        print(f"Attempt {attempt + 1} failed to retrieve metadata for slug {slug}: {e}. Retrying...")
-                    time.sleep(args.sleep_time if args and args.sleep_time else 5)
+                print(f"{bcolors.WARNING}[Hanimetv2026 Warning:] Attempt {attempt + 1} failed to retrieve metadata for slug {slug}: {e}. Retrying...{bcolors.ENDC}")
+                time.sleep(args.sleep_time)
+
             except Exception as e:
                 if attempt == max_retries - 1:
-                    raise
-                if args and args.verbose:
-                    print(f"Attempt {attempt + 1} failed to retrieve metadata for slug {slug}: {e}. Retrying...")
-                time.sleep(args.sleep_time if args and args.sleep_time else 5)
+                    raise Exception(f"{bcolors.FAIL}[Hanimetv2026 Error:] Failed to retrieve metadata for slug {slug} after {max_retries} attempts. Stopped download of {slug}. Error: {e}{bcolors.ENDC}")
+                print(f"{bcolors.WARNING}[Hanimetv2026 Warning:] Attempt {attempt + 1} failed to retrieve metadata for slug {slug}: {e}. Retrying...{bcolors.ENDC}")
+                time.sleep(args.sleep_time)
     
 def parse_hanime_url(url):
     if not url:
@@ -115,7 +100,4 @@ def parse_hanime_url(url):
         return url.split("/hentai/")[1].strip("/ ")
     if "freeanimehentai.net" in url:
         return url.split("/hentai/")[1].strip("/ ")
-    return url.strip("/ ")
-
-
-
+    return None
