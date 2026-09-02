@@ -39,20 +39,70 @@ irm https://deno.land/install.ps1 | iex
 ### Advanced Options
 
 ```bash
-usage: hanimetv2026 [-h] [--resolution RESOLUTION] [--retrys RETRYS]
-                    [--sleep-time SLEEP_TIME]
-                    [--downloader-args DOWNLOADER_ARGS [DOWNLOADER_ARGS ...]]
-                    [--verbose] [--verbose-ffmpeg] [--poster-download]
-                    [--no-thumbnail] [--no-metadata] [--no-merged-description]
-                    [--title-as-filename] [--skip-unavailable-fragments]
-                    [--output-dir OUTPUT_DIR] [--working-dir WORKING_DIR]
-                    [--save-urls-dir SAVE_URLS_DIR]
-                    [--save-slugs-dir SAVE_SLUGS_DIR] [--errors-dir ERRORS_DIR]
-                    [--download-archive DOWNLOAD_ARCHIVE] [--video VIDEO]
-                    [--all] [--batch-file BATCH_FILE] [--search] [--update]
-                    [--only-posters] [--add-only-metadata]
-                    [--continue-from-page CONTINUE_FROM_PAGE]
-                    [--tags TAGS [TAGS ...]] [--brand BRAND [BRAND ...]]
+usage: hanimetv2026 [-h] [--resolution RESOLUTION] [--retrys RETRYS] [--sleep-time SLEEP_TIME]
+                    [--downloader-args DOWNLOADER_ARGS [DOWNLOADER_ARGS ...]] [--verbose] [--verbose-ffmpeg]
+                    [--poster-download] [--no-thumbnail] [--no-metadata] [--add-only-metadata]
+                    [--no-merged-description] [--title-as-filename] [--skip-unavailable-fragments]
+                    [--output-dir OUTPUT_DIR] [--working-dir WORKING_DIR] [--save-urls-dir SAVE_URLS_DIR]
+                    [--save-slugs-dir SAVE_SLUGS_DIR] [--errors-dir ERRORS_DIR] [--download-archive DOWNLOAD_ARCHIVE]
+                    [--video VIDEO] [--all] [--batch-file BATCH_FILE] [--search] [--only-posters] [--update]
+                    [--continue-from-page CONTINUE_FROM_PAGE] [--tags TAGS [TAGS ...]] [--brand BRAND [BRAND ...]]
+
+options:
+  -h, --help            show this help message and exit
+
+Download options:
+  --resolution RESOLUTION, -R RESOLUTION
+                        Resolution of download, default 1080
+  --retrys RETRYS, -r RETRYS
+                        How often to retry failed downloads. (Default=2)
+  --sleep-time SLEEP_TIME, -s SLEEP_TIME
+                        Sleep time between retries (Default=10)
+  --downloader-args DOWNLOADER_ARGS [DOWNLOADER_ARGS ...]
+                        Additional arguments to pass to yt-dlp when downloading videos, e.g. --download-archive
+                        archive.txt
+  --verbose, -v         Enable verbose logging for video download
+  --verbose-ffmpeg      Enable verbose logging for ffmpeg processing steps
+  --poster-download     Download poster image for videos as seperate file
+  --no-thumbnail        Do not download thumbnail image for videos
+  --no-metadata         Do not download embedded metadata
+  --add-only-metadata   Adds metadata and thumbnail to already downloaded videos in batch file
+  --no-merged-description
+                        Do not merge description text file in the video metadata
+  --title-as-filename   Use video title as filename instead of slug
+  --skip-unavailable-fragments
+                        Skip unavailable video fragments after retrying 1 time
+
+Path options:
+  --output-dir OUTPUT_DIR, -o OUTPUT_DIR
+                        Output directory for downloads
+  --working-dir WORKING_DIR, -w WORKING_DIR
+                        Working directory for downloads
+  --save-urls-dir SAVE_URLS_DIR
+                        Path to log file for download URLs
+  --save-slugs-dir SAVE_SLUGS_DIR
+                        Path to .txt file for slugs of downloaded videos
+  --errors-dir ERRORS_DIR
+                        Path to .txt file for failed URL downloads
+  --download-archive DOWNLOAD_ARCHIVE
+                        Path to yt-dlp download archive file
+
+Modes:
+  --video VIDEO         Download a single video by URL
+  --all, -a             Download all videos from hanimeTV
+  --batch-file BATCH_FILE, -b BATCH_FILE
+                        Path to .txt file containing video URLs or search terms, one per line
+  --search              Mode to use for search and download videos with other arguments
+  --only-posters        Only download posters for videos
+
+Search options:
+  --update              search only for new videos, then stop
+  --continue-from-page CONTINUE_FROM_PAGE
+                        Continue downloading from a specific page number (for --all or --search)
+  --tags TAGS [TAGS ...], -t TAGS [TAGS ...]
+                        Tags to search for (used with --search)
+  --brand BRAND [BRAND ...], -c BRAND [BRAND ...]
+                        Companies/brands to filter by (used with --search)
 ```
 
 #### Option Details
